@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal ASAS | MI PLUS DARUL FALAH</title>
+    <style>
+        :root {
+            --primary-color: #198754;
+            --secondary-color: #f8f9fa;
+            --highlight-color: #c4e142;
+            --day-highlight-color: #d1e7dd;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --container-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .header-text h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+
+        .header-text p {
+            margin: 5px 0 0;
+            color: #6c757d;
+            font-size: 1em;
+        }
+
+        /* Sticky Search Bar */
+        .search-bar-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--secondary-color);
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+        }
+
+        .search-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(25,135,84,0.25);
+        }
+
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1001;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f3f5;
+            transition: background-color 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Schedule Container */
+        .class-schedule-container {
+            margin-bottom: 50px;
+        }
+
+        .class-schedule-container h2 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+
+        td.hari-cell {
+            background-color: #e9ecef;
+            font-weight: 600;
+            width: 120px;
+        }
+
+        td.tanggal-cell {
+            background-color: #ced4da;
+            width: 140px;
+        }
+
+        /* Highlight Styles */
+        td.highlighted-number {
+            background-color: var(--highlight-color) !important;
+            font-weight: bold;
+            color: #0f5132;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        td.highlighted-mapel {
+            background-color: #e8f4fd !important;
+            font-weight: bold;
+            color: #0d6efd;
+            border-left: 4px solid #0d6efd !important;
+        }
+
+        td.highlighted-number::after {
+            content: "👁";
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.9; }
+            100% { opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 1200px) {
+            .container {
+                padding: 15px;
+            }
+            
+            table {
+                font-size: 13px;
+            }
+            
+            th, td {
+                padding: 10px 6px;
+            }
+            
+            .header-text h1 {
+                font-size: 2em;
+            }
+        }
+
+        @media screen and (max-width: 992px) {
+            .container {
+                padding: 12px;
+            }
+            
+            header {
+                padding: 15px 0;
+                margin-bottom: 20px;
+            }
+            
+            .header-text h1 {
+                font-size: 1.8em;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+            }
+            
+            .class-schedule-container h2 {
+                font-size: 1.4em;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 10px;
+                border-radius: 8px;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                padding: 10px 0;
+                margin-bottom: 15px;
+            }
+            
+            .logo {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .header-text h1 {
+                font-size: 1.5em;
+            }
+            
+            .header-text p {
+                font-size: 0.9em;
+            }
+            
+            .search-bar-sticky {
+                padding: 10px 0;
+                margin-bottom: 15px;
+            }
+            
+            .search-container {
+                padding: 0 10px;
+            }
+            
+            .search-input {
+                padding: 12px 15px;
+                font-size: 16px;
+            }
+            
+            .autocomplete-suggestions {
+                left: 10px;
+                right: 10px;
+            }
+            
+            .class-schedule-container {
+                margin-bottom: 30px;
+            }
+            
+            .class-schedule-container h2 {
+                font-size: 1.3em;
+                padding-bottom: 8px;
+                margin-bottom: 15px;
+            }
+            
+            table {
+                font-size: 11px;
+                min-width: 700px;
+            }
+            
+            th, td {
+                padding: 6px 3px;
+            }
+            
+            td.hari-cell,
+            td.tanggal-cell {
+                width: 100px;
+            }
+            
+            /* Highlight styles untuk mobile */
+            td.highlighted-mapel {
+                border-left: 3px solid #0d6efd !important;
+            }
+            
+            td.highlighted-number::after {
+                right: 3px;
+                font-size: 0.7em;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .container {
+                padding: 8px;
+            }
+            
+            .header-text h1 {
+                font-size: 1.3em;
+            }
+            
+            .header-text p {
+                font-size: 0.8em;
+            }
+            
+            .search-input {
+                padding: 10px 15px;
+            }
+            
+            .suggestion-item {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+            
+            table {
+                font-size: 10px;
+                min-width: 650px;
+            }
+            
+            th, td {
+                padding: 5px 2px;
+            }
+            
+            td.hari-cell,
+            td.tanggal-cell {
+                width: 90px;
+            }
+            
+            .class-schedule-container h2 {
+                font-size: 1.2em;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .search-bar-sticky {
+                display: none;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .highlighted-number,
+            .highlighted-mapel {
+                background-color: #ffffcc !important;
+                border: 1px solid #cccc00 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky Search Bar -->
+    <div class="search-bar-sticky">
+        <div class="search-container">
+            <input type="text" id="teacherSearch" class="search-input" placeholder="Cari nama guru untuk menandai jadwal...">
+            <div id="suggestionsContainer" class="autocomplete-suggestions"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <img src="logo-sekolah.png" alt="Logo MI PLUS DARUL FALAH" class="logo">
+            <div class="header-text">
+                <h1>JADWAL PENGAWAS ASAS</h1>
+                <p>MI PLUS DARUL FALAH GAMBIRAN MOJOAGUNG</p>
+                <p>TAHUN PELAJARAN 2025/2026</p>
+            </div>
+        </header>
+
+        <main>
+            <div id="all-schedules-container">
+                <!-- Tabel kelas 1-6 akan di-generate oleh JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // === DATA GURU ===
+            const teachers = [
+                { number: 1, name: 'H. Wachid, S.Ag' }, { number: 2, name: 'Achmad Fathoni, M.HI' }, { number: 3, name: 'Ida Fitri Shobibah, S.Psi, M.A' },
+                { number: 4, name: 'Isna Fadlilatul Munjiyah, S.Pd.I' }, { number: 5, name: 'Achmad Suwignyo, S.Pd' }, { number: 6, name: 'Hidayatul Qomariyah, M.Pd.I' },
+                { number: 7, name: 'Sitoresmi Arineng Tiyas, M.Pd' }, { number: 8, name: 'Herdina Rahma Zalita, M.Pd' }, { number: 9, name: 'ST Nur Jannah, S.Pd' },
+                { number: 10, name: 'Khalimatus Sa\'diyah, S.Pd' }, { number: 11, name: 'M. Ali Wafi, S.Pd.I' }, { number: 12, name: 'Tutik Herawati, M.Pd' },
+                { number: 13, name: 'Nurul Fadhilah, S.Pd' }, { number: 14, name: 'Rizka Setia Anggraini, S.Pd' }, { number: 15, name: 'A\'at Afiatan, S.Pd' },
+                { number: 16, name: 'Wahyu Saputri, S.Pd' }, { number: 17, name: 'Kandhina Asnanti, S.Pd' }, { number: 18, name: 'Munjiatun Toiyibah, S.Pd' },
+                { number: 19, name: 'Wahyu Fitriyanti, S.Pd' }, { number: 20, name: 'Cicik Dwi Safitri, S.Pd' }, { number: 21, name: 'Reka Rohmatul Aina, S.Pd' },
+                { number: 22, name: 'Lala Anggi Rakasiwi, S.Pd' }, { number: 23, name: 'Laksono Adi Swasono, S.Pd' }, { number: 24, name: 'Achmad Zainal Arifin, S.Pd' },
+                { number: 25, name: 'Muchammad Mujib Abdulloh, S.Pd' }, { number: 26, name: 'Nurmala Chintiana, M.Pd' }, { number: 27, name: 'Indah Rahmawati, S.Pd' },
+                { number: 28, name: 'Aliefia Fadhila, S.Pd' }, { number: 29, name: 'M. Yusuf Cholili, S.Pd.I' }, { number: 30, name: 'Lailatul Khusnandia, S.Pd' },
+                { number: 31, name: 'Annisa\' Khanifiyatul Arifin, S.Pd' }, { number: 32, name: 'Sunnah Ida, M.Pd' }, { number: 33, name: 'Santika Putri Dwi Anhar, S.Pd' },
+                { number: 34, name: 'Berliana Fransisca, S.Pd' }, { number: 35, name: 'Ahmad Batsul Mushofi Septian Wachid, S.Pd' }, { number: 36, name: 'Aida Qurrotul Aini' },
+                { number: 37, name: 'Lanny Kartikasari, S.Si' }, { number: 38, name: 'Reza Maulana, S.Pd' }, { number: 39, name: 'Mohammmad Hayatuddin, S.H' },
+                { number: 40, name: 'Vinda Khilda A, S.Psi' }, { number: 41, name: 'Ahamad Faizin Mahbub, S.Pd' }, { number: 42, name: 'Dania Sarah Farahdina, S.Pd' },
+                { number: 43, name: 'Lingga Talita Ayu Nanda, M.Pd' }, { number: 44, name: 'Halimatus Sa\'diyah, M.Pd' }, { number: 45, name: 'Eva Idha Farihatunnisa\', S.Pd' },
+                { number: 46, name: 'Susilowati, S.Pd' }, { number: 47, name: 'Fatma Nur Aini, S.Ag' }, { number: 48, name: 'Cindy Windriani Arga Putri, S.Pd' },
+                { number: 49, name: 'Istiqomah, S.Pd' }, { number: 50, name: 'Tita Candra Wulan, S.Pd' }, { number: 51, name: 'Mudiyah Murtiningsih, S.Pd' },
+                { number: 52, name: 'Mohammad Bakhtiar Arifianto, S.Pd' }, { number: 53, name: 'Devia Laila Anggraeni, S.Pd' }, { number: 54, name: 'Muhammad Zakaria' },
+                { number: 55, name: 'Muhammad Agni, S.Pd' }, { number: 56, name: 'Ulfa Rahma, S.Pd' }, { number: 57, name: 'Amalia Fida Yanti, S.Pd' },
+                { number: 58, name: 'Inti Shorunnuha Az Zahrah, M.Pd' }, { number: 59, name: 'Febriana Nurba Pratiwi, S.Pd' }, { number: 60, name: 'Lailatul Mukhayanah, S.Pd' },
+                { number: 61, name: 'Hanin Fulani, S.Pd.I' }, { number: 62, name: 'Risa Rizkika, S.Pd' }, { number: 63, name: 'Zulfa Fauziyyah' },
+                { number: 64, name: 'Rahma Agustina Safitri, S.Pd' }, { number: 65, name: 'Nungki Putri Wulandari, S.Pd' }, { number: 66, name: 'Tataq Candra Puti, S.S' },
+                { number: 67, name: 'Mohammad Yusuf Rizaldy, S.Pd' }
+            ];
+
+            // === DATA JADWAL ===
+            const allScheduleData = {
+                kelas1: { 
+                    subjects: [
+                         { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'Pancasila',          jam: '09.15 - 10.15' },
+                { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'PEGO',               jam: '10.15 - 11.15' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Bahasa Indonesia',   jam: '09.15 - 10.15' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Fiqih',              jam: '10.15 - 11.15' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Matematika',         jam: '09.15 - 10.15' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Akidah Akhlak',      jam: '10.15 - 11.15' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Bahasa Arab',        jam: '09.15 - 10.15' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Seni',               jam: '10.15 - 11.15' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Bahasa Inggris',     jam: '08.00 - 09.00' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Quran Hadist',       jam: '09.15 - 10.15' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'PJOK',               jam: '09.15 - 10.15' }
+            ], 
+                    supervisors: [
+                        [[20,51],[48,47],[33,50],[40,53],[15,56]],
+                        [[48,50],[40,56],[20,53],[15,51],[33,19]],
+                        [[33,63],[15,5],[48,19],[20,50],[40,56]],
+                        [[40,19],[33,50],[15,63],[48,5],[20,54]],
+                        [[15,56],[20,53],[40,51],[33,63],[48,5]],
+                        [[20,51],[48,63],[33,5],[40,53],[15,56]],
+                        [[50,6],[52,29],[58,56],[54,65],[5,51]],
+                        [[29,58],[54,5],[6,51],[65,56],[52,50]],
+                        [[48,50],[40,56],[20,53],[15,51],[33,63]],
+                        [[33,63],[15,51],[48,56],[20,50],[40,53]],
+                        [[40,58],[33,54],[15,52],[48,29],[20,51]]
+                    ]
+                },
+                kelas2: { 
+                    subjects: [
+                         { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'Pancasila',        jam: '09.15 - 10.15' },
+                { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'PEGO',             jam: '10.15 - 11.15' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Bahasa Indonesia', jam: '09.15 - 10.15' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Fiqih',            jam: '10.15 - 11.15' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Matematika',       jam: '09.15 - 10.15' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Akidah Akhlak',    jam: '10.15 - 11.15' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Bahasa Arab',      jam: '09.15 - 10.15' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Informatika',      jam: '10.15 - 11.15' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Bahasa Inggris',   jam: '08.00 - 09.00' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Quran Hadist',     jam: '09.15 - 10.15' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'PJOK',             jam: '09.15 - 10.15' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'Seni',             jam: '10.15 - 11.15' },
+                { hari: 'Selasa', tanggal: '09 Des 2025', mapel: 'Bahasa Jawa',      jam: '09.15 - 10.15' }
+            ], 
+                    supervisors: [
+                        [[4,36],[21,60],[30,52],[59,57],[18,54]],
+                        [[21,60],[18,57],[4,54],[30,52],[59,36]],
+                        [[18,57],[25,36],[21,60],[59,67],[30,66]],
+                        [[59,66],[25,67],[30,36],[18,60],[21,57]],
+                        [[18,67],[30,52],[59,57],[21,36],[4,54]],
+                        [[4,36],[21,54],[30,52],[59,57],[25,67]],
+                        [[19,66],[55,67],[25,36],[47,60],[18,43]],
+                        [[67],[19,66],[55,25],[43,36],[47,60]],
+                        [[30,60],[18,57],[4,67],[59,66],[21,36]],
+                        [[18,57],[30,36],[21,60],[4,67],[59,66]],
+                        [[30,19],[4,25],[59,55],[18,47],[21,43]],
+                        [[59,25],[30,47],[18,43],[21,55],[4,19]],
+                        [[4,36],[21,60],[30,66],[59,57],[18,67]]
+                    ]
+                },
+                kelas3: {
+                    subjects: [
+                       { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'Pancasila',        jam: '07.45 - 08.45' },
+                { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'PEGO',             jam: '10.15 - 11.15' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Bahasa Indonesia', jam: '07.45 - 08.45' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Fiqih',            jam: '10.15 - 11.15' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Matematika',       jam: '07.45 - 08.45' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Akidah Akhlak',    jam: '10.15 - 11.15' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Bahasa Arab',      jam: '07.45 - 08.45' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Informatika',      jam: '10.15 - 11.15' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Bahasa Inggris',   jam: '07.15 - 08.15' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Quran Hadist',     jam: '09.00 - 10.00' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'PJOK',             jam: '07.45 - 08.45' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'Seni',             jam: '10.15 - 11.15' },
+                { hari: 'Selasa', tanggal: '09 Des 2025', mapel: 'SKI',              jam: '07.45 - 08.45' },
+                { hari: 'Selasa', tanggal: '09 Des 2025', mapel: 'Alala',            jam: '10.15 - 11.15' },
+                { hari: 'Rabu',   tanggal: '10 Des 2025', mapel: 'IPAS',             jam: '07.45 - 08.45' },
+                { hari: 'Rabu',   tanggal: '10 Des 2025', mapel: 'Bahasa Jawa',      jam: '10.15 - 11.15' }
+           ],
+                    supervisors: [
+                [38, 23,  9, 34,  7],
+                [25,  8, 27, 32, 47],
+                [ 9, 34,  8, 23, 38],
+                [34, 52,  7,  9,  8],
+                [ 7,  9, 23, 38, 34],
+                [38, 23,  8, 32,  7],
+                [23, 34, 38,  7,  9],
+                [ 9,  7, 34, 23, 38],
+                [34, 38,  7,  9, 23],
+                [26, 65, 52,  8, 27],
+                [32, 27,  8, 26, 45],
+                [27, 26, 32, 65,  8],
+                [ 9,  7, 34, 23, 38],
+                [34, 38,  7,  9, 23],
+                [38, 23,  9, 34,  7],
+                [ 7, 34, 23,  9, 38]
+            ]
+                },
+                kelas4: {
+                    subjects: [
+                       { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'Pancasila',        jam: '07.45 - 08.45' },
+                { hari: 'Senin',  tanggal: '01 Des 2025', mapel: "Qur'an Hadist",     jam: '10.15 - 11.15' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Bahasa Indonesia', jam: '07.45 - 08.45' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Fiqih',            jam: '10.15 - 11.15' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Matematika',       jam: '07.45 - 08.45' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Akidah Akhlak',    jam: '10.15 - 11.15' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Bahasa Arab',      jam: '07.45 - 08.45' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Informatika',      jam: '10.15 - 11.15' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Bahasa Inggris',   jam: '07.15 - 08.15' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Seni',              jam: '09.00 - 10.00' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'PJOK',             jam: '07.45 - 08.45' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'IPAS',             jam: '10.15 - 11.15' },
+                { hari: 'Selasa', tanggal: '09 Des 2025', mapel: 'Aswaja',           jam: '07.45 - 08.45' },
+                { hari: 'Selasa', tanggal: '09 Des 2025', mapel: "Mabadi'ul Fiqih",  jam: '10.15 - 11.15' },
+                { hari: 'Rabu',   tanggal: '10 Des 2025', mapel: 'SKI',              jam: '07.45 - 08.45' },
+                { hari: 'Rabu',   tanggal: '10 Des 2025', mapel: 'PEGO',             jam: '10.15 - 11.15' },
+                { hari: 'Kamis',  tanggal: '11 Des 2025', mapel: 'Bahasa Jawa',      jam: '07.45 - 08.45' }
+            ],
+                    supervisors: [
+                        [28, 58, 14, 26, 5], [42, 5, 49, 28, 14], [41, 37, 32, 39, 16], [37, 32, 58, 16, 41],
+                        [26, 28, 62, 42, 39], [42, 58, 14, 26, 62], [16, 62, 41, 32, 49], [39, 37, 16, 49, 41],
+                        [14, 26, 58, 62, 28], [16, 49, 42, 14, 58], [28, 41, 37, 16, 62], [42, 62, 16, 28, 14],
+                        [62, 14, 28, 58, 26], [14, 42, 39, 62, 28], [26, 28, 62, 14, 58], [28, 39, 14, 26, 62], [58, 62, 26, 28, 14]
+                    ]
+                },
+                kelas5: {
+                    subjects: [
+                         { hari: 'Senin',  tanggal: '01 Des 2025', mapel: 'Pancasila',        jam: '07.45 - 08.45' },
+                { hari: 'Senin',  tanggal: '01 Des 2025', mapel: "Qur'an Hadist",     jam: '08.45 - 09.45' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Bahasa Indonesia', jam: '07.45 - 08.45' },
+                { hari: 'Selasa', tanggal: '02 Des 2025', mapel: 'Fiqih',            jam: '08.45 - 09.45' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Matematika',       jam: '07.45 - 08.45' },
+                { hari: 'Rabu',   tanggal: '03 Des 2025', mapel: 'Akidah Akhlak',    jam: '08.45 - 09.45' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Bahasa Arab',      jam: '07.45 - 08.45' },
+                { hari: 'Kamis',  tanggal: '04 Des 2025', mapel: 'Informatika',      jam: '08.45 - 09.45' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: 'Bahasa Inggris',   jam: '07.15 - 08.15' },
+                { hari: 'Jumat',  tanggal: '05 Des 2025', mapel: "Mabadi'ul Fiqih",   jam: '08.15 - 09.15' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: 'IPAS',             jam: '07.45 - 08.45' },
+                { hari: 'Senin',  tanggal: '08 Des 2025', mapel: "Aqidatul Awwam",     jam: '08.45 - 09.45' },
+                { hari: 'Selasa', tanggal: '09 Des 2025', mapel: 'Aswaja',           jam: '07.45 - 08.45' },
+                { hari: 'Selasa', tanggal: '09 Des 2025', mapel: 'PJOK',             jam: '08.45 - 09.45' },
+                { hari: 'Rabu',   tanggal: '10 Des 2025', mapel: 'SKI',              jam: '07.45 - 08.45' },
+                { hari: 'Rabu',   tanggal: '10 Des 2025', mapel: 'PEGO',             jam: '08.45 - 09.45' },
+                { hari: 'Kamis',  tanggal: '11 Des 2025', mapel: 'Seni',             jam: '07.45 - 08.45' },
+                { hari: 'Kamis',  tanggal: '11 Des 2025', mapel: 'Bahasa Jawa',      jam: '08.45 - 09.45' }
+            ],
+                    supervisors: [
+                        [10, 27, 37, 19, 45], [39, 13, 45, 10, 41], [55, 61, 42, 13, 27], [42, 65, 13, 55, 39],
+                        [45, 37, 10, 27, 65], [13, 39, 41, 61, 45], [27, 42, 39, 35, 10], [42, 10, 61, 45, 13],
+                        [65, 13, 27, 39, 10], [45, 37, 13, 55, 41], [10, 42, 65, 13, 39], [41, 39, 45, 10, 37],
+                        [37, 41, 55, 61, 39], [19, 55, 13, 37, 10], [45, 10, 41, 27, 13], [10, 41, 13, 19, 45], [27, 19, 45, 10, 41], [37, 13, 19, 45, 27]
+                    ]
+                },
+                kelas6: {
+                    subjects: [
+                         { hari: 'Senin',   tanggal: '01 Des 2025', mapel: 'Pancasila',        jam: '07.45 - 08.45' },
+                { hari: 'Senin',   tanggal: '01 Des 2025', mapel: "Qur'an Hadist",     jam: '08.45 - 09.45' },
+                { hari: 'Selasa',   tanggal: '02 Des 2025', mapel: 'Bahasa Indonesia', jam: '07.45 - 08.45' },
+                { hari: 'Selasa',   tanggal: '02 Des 2025', mapel: 'Fiqih',            jam: '08.45 - 09.45' },
+                { hari: 'Rabu',    tanggal: '03 Des 2025', mapel: 'Matematika',       jam: '07.45 - 08.45' },
+                { hari: 'Rabu',    tanggal: '03 Des 2025', mapel: 'Akidah Akhlak',    jam: '08.45 - 09.45' },
+                { hari: 'Kamis',   tanggal: '04 Des 2025', mapel: 'Bahasa Arab',      jam: '07.45 - 08.45' },
+                { hari: 'Kamis',   tanggal: '04 Des 2025', mapel: 'Informatika',      jam: '08.45 - 09.45' },
+                { hari: 'Jumat',   tanggal: '05 Des 2025', mapel: 'Seni',             jam: '07.15 - 08.15' },
+                { hari: 'Jumat',    tanggal: '05 Des 2025', mapel: "Mabadi'ul Fiqih",  jam: '08.15 - 09.15' },
+                { hari: 'Senin',   tanggal: '08 Des 2025', mapel: 'IPAS',             jam: '07.45 - 08.45' },
+                { hari: 'Senin',    tanggal: '08 Des 2025', mapel: 'Pego',              jam: '08.45 - 09.45' },
+                { hari: 'Selasa',   tanggal: '09 Des 2025', mapel: 'Aswaja',            jam: '07.45 - 08.45' },
+                { hari: 'Selasa',   tanggal: '09 Des 2025', mapel: 'PJOK',             jam: '08.45 - 09.45' },
+                { hari: 'Rabu',    tanggal: '10 Des 2025', mapel: 'SKI',              jam: '07.45 - 08.45' },
+                { hari: 'Rabu',    tanggal: '10 Des 2025', mapel: 'Shorof',             jam: '08.45 - 09.45' },
+                { hari: 'Kamis',    tanggal: '11 Des 2025', mapel: 'Bahasa Inggris',   jam: '07.45 - 08.45' },
+                { hari: 'Kamis',    tanggal: '11 Des 2025', mapel: 'Bahasa Jawa',      jam: '08.45 - 09.45' }
+            ],
+                    supervisors: [
+                        [32, 49, 17, 43, 22], [16, 43, 22, 17, 35], [43, 22, 35, 49, 17], [17, 61, 43, 22, 49],
+                        [22, 17, 35, 32, 43], [35, 16, 17, 43, 22], [61, 12, 22, 17, 24], [12, 22, 32, 35, 17],
+                        [6, 61, 35, 25, 49], [61, 35, 12, 6, 25], [35, 5, 17, 61, 22], [49, 61, 5, 17, 12],
+                        [43, 22, 32, 49, 17], [17, 32, 43, 22, 49], [22, 17, 49, 32, 43], [25, 49, 17, 43, 22], [49, 43, 22, 17, 25], [43, 22, 32, 49, 17]
+                    ]
+                }
+            };
+
+            // === DOM ELEMENTS ===
+            const searchInput = document.getElementById('teacherSearch');
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            const allSchedulesContainer = document.getElementById('all-schedules-container');
+            let highlightedTeacherNumber = null;
+
+            // === FUNGSI UTAMA ===
+            function generateAllSchedules() {
+                allSchedulesContainer.innerHTML = '';
+                const order = ['kelas1','kelas2','kelas3','kelas4','kelas5','kelas6'];
+
+                order.forEach(key => {
+                    const data = allScheduleData[key];
+                    if (!data) return;
+
+                    const num = key.replace('kelas', '');
+                    const container = document.createElement('div');
+                    container.className = 'class-schedule-container';
+
+                    const h2 = document.createElement('h2');
+                    h2.textContent = `KELAS ${num}`;
+                    container.appendChild(h2);
+
+                    const tableDiv = document.createElement('div');
+                    tableDiv.className = 'table-container';
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    const tbody = document.createElement('tbody');
+
+                    // Header
+                    let headerHtml = `<tr><th rowspan="2">HARI</th><th rowspan="2">TANGGAL</th><th rowspan="2">MATA PELAJARAN</th>`;
+                    for (let i = 1; i <= 5; i++) headerHtml += `<th>${num}.${i}</th>`;
+                    headerHtml += `</tr>`;
+                    thead.innerHTML = headerHtml;
+
+                    let prevDate = null;
+                    let sessionIndex = 0;
+
+                    data.subjects.forEach(sub => {
+                        const tr = document.createElement('tr');
+                        tr.setAttribute('data-tanggal', sub.tanggal);
+
+                        // Rowspan Hari & Tanggal
+                        if (sub.tanggal !== prevDate) {
+                            const countSameDate = data.subjects.filter(s => s.tanggal === sub.tanggal).length;
+                            tr.innerHTML += `
+                                <td class="hari-cell" rowspan="${countSameDate}">${sub.hari}</td>
+                                <td class="tanggal-cell" rowspan="${countSameDate}">${sub.tanggal}</td>`;
+                            prevDate = sub.tanggal;
+                        }
+
+                        tr.innerHTML += `
+                            <td data-label="MATA PELAJARAN" style="line-height:1.5; vertical-align:middle;">
+                                <div style="font-weight:600;">${sub.mapel}</div>
+                                <div style="font-size:0.88em; color:#555; margin-top: 3px;">${sub.jam}</div>
+                            </td>`;
+
+                        // Supervisor Cells
+                        const supervisorsThisSession = data.supervisors[sessionIndex] || [];
+
+                        for (let i = 0; i < 5; i++) {
+                            let cellNumbers = [];
+                            const raw = supervisorsThisSession[i];
+
+                            // Normalisasi data supervisor
+                            if (Array.isArray(raw)) {
+                                if (raw.every(item => Array.isArray(item))) {
+                                    raw.forEach(subArray => {
+                                        cellNumbers.push(...subArray);
+                                    });
+                                } else if (raw.every(item => typeof item === 'number')) {
+                                    cellNumbers = [...raw];
+                                } else {
+                                    raw.forEach(item => {
+                                        if (typeof item === 'number') {
+                                            cellNumbers.push(item);
+                                        }
+                                    });
+                                }
+                            } else if (typeof raw === 'number') {
+                                cellNumbers.push(raw);
+                            }
+
+                            // Buat konten HTML + simpan nomor
+                            let contentHtml = cellNumbers.length > 0 ? cellNumbers.join('<br>') : '-';
+                            tr.innerHTML += `
+                                <td data-label="${num}.${i+1}" data-numbers="${cellNumbers.join(',')}">
+                                    ${contentHtml}
+                                </td>`;
+                        }
+
+                        tbody.appendChild(tr);
+                        sessionIndex++;
+                    });
+
+                    table.appendChild(thead);
+                    table.appendChild(tbody);
+                    tableDiv.appendChild(table);
+                    container.appendChild(tableDiv);
+                    allSchedulesContainer.appendChild(container);
+                });
+            }
+
+            // === PENCARIAN & HIGHLIGHT ===
+            function showSuggestions(val) {
+                suggestionsContainer.innerHTML = '';
+                if (val.trim().length < 2) { 
+                    suggestionsContainer.style.display = 'none'; 
+                    return; 
+                }
+                suggestionsContainer.style.display = 'block';
+
+                const filtered = teachers.filter(t => 
+                    t.name.toLowerCase().includes(val.toLowerCase()) || 
+                    t.number.toString().includes(val)
+                );
+                filtered.forEach(t => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.textContent = `${t.number}. ${t.name}`;
+                    div.onclick = () => {
+                        searchInput.value = t.name;
+                        highlightedTeacherNumber = t.number;
+                        highlightTeacher(t.number);
+                        suggestionsContainer.style.display = 'none';
+                    };
+                    suggestionsContainer.appendChild(div);
+                });
+            }
+
+            function highlightTeacher(num) {
+                clearHighlights();
+                const searchNum = String(num);
+
+                // Cari semua sel yang memiliki nomor guru yang dicari
+                document.querySelectorAll('#all-schedules-container td[data-numbers]').forEach(td => {
+                    const numbers = td.getAttribute('data-numbers') || '';
+                    const numberArray = numbers.split(',').map(n => n.trim());
+                    
+                    if (numberArray.includes(searchNum)) {
+                        // Highlight kotak nomor guru
+                        td.classList.add('highlighted-number');
+                        
+                        // Cari baris dari sel ini
+                        const tr = td.closest('tr');
+                        
+                        // Highlight sel mapel di baris yang sama
+                        const mapelCell = tr.querySelector('td[data-label="MATA PELAJARAN"]');
+                        if (mapelCell) {
+                            mapelCell.classList.add('highlighted-mapel');
+                        }
+                    }
+                });
+            }
+
+            function clearHighlights() {
+                document.querySelectorAll('.highlighted-number, .highlighted-mapel').forEach(el => {
+                    el.classList.remove('highlighted-number');
+                    el.classList.remove('highlighted-mapel');
+                });
+            }
+
+            // === EVENT LISTENERS ===
+            searchInput.addEventListener('input', e => showSuggestions(e.target.value));
+            searchInput.addEventListener('focus', () => { 
+                clearHighlights(); 
+                searchInput.value = ''; 
+                suggestionsContainer.style.display = 'none'; 
+            });
+            document.addEventListener('click', e => {
+                if (!e.target.closest('.search-container')) {
+                    suggestionsContainer.style.display = 'none';
+                }
+            });
+
+            // === JALANKAN ===
+            generateAllSchedules();
+        });
+    </script>
+</body>
+</html>
