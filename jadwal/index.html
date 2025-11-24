@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal Pelajaran | MI PLUS DARUL FALAH</title>
+    <style>
+        :root {
+            --primary-color: #198754;
+            --secondary-color: #f8f9fa;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --container-bg: #ffffff;
+            --routine-color: #d1e7dd; /* Hijau muda untuk kegiatan rutin */
+            --break-color: #f8d7da;     /* Merah muda untuk istirahat */
+            --subject-color: #cff4fc;   /* Biru muda untuk mata pelajaran */
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+        }
+
+        /* Header Styles */
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .header-text h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 2.2em;
+            font-weight: 600;
+        }
+
+        .header-text p {
+            margin: 5px 0 0;
+            color: #6c757d;
+            font-size: 1em;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+            border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
+        }
+
+        .tab-nav li {
+            margin-bottom: -2px; /* Align with bottom border */
+        }
+
+        .tab-nav a {
+            display: block;
+            padding: 12px 24px;
+            text-decoration: none;
+            color: var(--text-color);
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab-nav a:hover {
+            background-color: #e9ecef;
+        }
+
+        .tab-nav a.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            padding: 20px 0;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Schedule Grid Layout */
+        .schedule-grid {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .week-block {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fdfdfd;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .week-block h2 {
+            margin-top: 0;
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 1.4em;
+        }
+
+        .day-schedule {
+            margin-top: 25px;
+        }
+
+        .day-schedule h3 {
+            margin: 0 0 15px 0;
+            color: var(--text-color);
+            font-size: 1.1em;
+            font-weight: 600;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* Table Styles */
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        .schedule-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .schedule-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .schedule-table td:first-child {
+            font-weight: 600;
+            color: #495057;
+            width: 40%;
+            text-align: right;
+            padding-right: 15px;
+        }
+        
+        /* Activity Type Styling */
+        .activity-routine {
+            background-color: var(--routine-color);
+        }
+        
+        .activity-break {
+            background-color: var(--break-color);
+            font-style: italic;
+            color: #721c24;
+        }
+
+        .activity-subject {
+            background-color: var(--subject-color);
+        }
+
+        /* Legend */
+        .legend {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            .schedule-grid {
+                flex-direction: column;
+            }
+            .week-block {
+                min-width: auto;
+            }
+            .header-text h1 {
+                font-size: 2em;
+            }
+            .tab-nav a {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            
+            .logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .header-text h1 {
+                font-size: 1.5em;
+            }
+            
+            .header-text p {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img src="logo-sekolah.png" alt="Logo MI PLUS DARUL FALAH" class="logo">
+            <div class="header-text">
+                <h1>JADWAL PENGAWAS ASAS</h1>
+                <p>MI PLUS DARUL FALAH GAMBIRAN MOJOAGUNG</p>
+                <p>TAHUN PELAJARAN 2025/2026</p>
+            </div>
+        </header>
+
+        <nav>
+            <ul class="tab-nav" id="tab-nav">
+                <!-- Tab items will be generated by JavaScript -->
+            </ul>
+        </nav>
+
+        <main class="tab-content" id="tab-content">
+            <!-- Tab panes will be generated by JavaScript -->
+        </main>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color activity-routine"></div>
+                <span>Kegiatan Rutin</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color activity-subject"></div>
+                <span>Mata Pelajaran</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color activity-break"></div>
+                <span>Istirahat / ISHOMA</span>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 MI PLUS DARUL FALAH GAMBIRAN MOJOAGUNG JOMBANG</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DATA JADWAL ---
+            const allSchedulesData = {
+                kelas1: {
+                    title: "KELAS I",
+                    schedule: [
+                        { date: "Senin, 01 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Pancasila", "subject"], ["10.15 - 11.15", "PEGO", "subject"], ["11.15 - 11.30", "ISHOMA", "break"]] },
+                        { date: "Selasa, 02 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Bahasa Indonesia", "subject"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "ISHOMA", "break"]] },
+                        { date: "Rabu, 03 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Matematika", "subject"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "Akidah Akhlak", "subject"]] },
+                        { date: "Kamis, 04 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Bahasa Arab", "subject"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "Ishoma", "break"]] },
+                        { date: "Jumat, 05 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 08.00", "UMMI", "routine"], ["08.00 - 09.00", "Bahasa Inggris", "subject"], ["09.00 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Qur'an Hadits", "subject"]] },
+                        { date: "Senin, 08 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "PJOK", "subject"], ["10.15 - 11.15", "Hafalan", "routine"], ["11.15 - 11.30", "ISHOMA", "break"]] }
+                    ]
+                },
+                kelas2: {
+                    title: "KELAS II",
+                    schedule: [
+                        { date: "Senin, 01 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Pancasila", "subject"], ["10.15 - 11.15", "PEGO", "subject"], ["11.15 - 11.30", "ISHOMA", "break"]] },
+                        { date: "Selasa, 02 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Bahasa Indonesia", "subject"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "ISHOMA", "break"]] },
+                        { date: "Rabu, 03 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Matematika", "subject"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "Akidah Akhlak", "subject"]] },
+                        { date: "Kamis, 04 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Bahasa Arab", "subject"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "Ishoma", "break"]] },
+                        { date: "Jumat, 05 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 08.00", "UMMI", "routine"], ["08.00 - 09.00", "Bahasa Inggris", "subject"], ["09.00 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Qur'an Hadits", "subject"]] },
+                        { date: "Senin, 08 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "PJOK", "subject"], ["10.15 - 11.15", "Seni", "subject"], ["11.15 - 11.30", "ISHOMA", "break"]] },
+                        { date: "Selasa, 09 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "UMMI", "routine"], ["08.45 - 09.15", "Istirahat", "break"], ["09.15 - 10.15", "Bahasa Jawa", "subject"], ["10.15 - 11.15", "Hafalan", "routine"], ["11.15 - 11.30", "ISHOMA", "break"]] }
+                    ]
+                },
+                kelas3: {
+                    title: "KELAS III",
+                    schedule: [
+                        { date: "Senin, 01 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Pancasila", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "PEGO", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Selasa, 02 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Indonesia", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Rabu, 03 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Matematika", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Akidah Akhlak", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Kamis, 04 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Arab", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Informatika", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Jumat, 05 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 08.15", "Bahasa Inggris", "subject"], ["08.15 - 09.00", "UMMI", "routine"], ["09.00 - 10.00", "Qur'an Hadits", "subject"], ["10.00 - 10.15", "Istirahat", "break"], ["10.15 - 10.30", "Amaliyah Ubudiyah", "break"]] },
+                        { date: "Senin, 08 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "PJOK", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Seni", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Selasa, 09 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "SKI", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Alala", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Rabu, 10 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "IPAS", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Bahasa Jawa", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] }
+                    ]
+                },
+                kelas4: {
+                    title: "KELAS IV",
+                    schedule: [
+                        { date: "Senin, 01 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Pancasila", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Qur'an Hadist", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Selasa, 02 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Indonesia", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Fiqih", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Rabu, 03 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Matematika", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Akidah Akhlak", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Kamis, 04 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Arab", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Informatika", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Jumat, 05 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 08.15", "Bahasa Inggris", "subject"], ["08.15 - 09.00", "UMMI", "routine"], ["09.00 - 10.00", "Seni", "subject"], ["10.00 - 10.15", "Istirahat", "break"], ["10.15 - 10.30", "Amaliyah Ubudiyah", "break"]] },
+                        { date: "Senin, 08 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "PJOK", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "IPAS", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Selasa, 09 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Aswaja", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Mabadi'ul Fiqih", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Rabu, 10 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "SKI", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "Pego", "subject"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] },
+                        { date: "Kamis, 11 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Jawa", "subject"], ["08.45 - 09.45", "UMMI", "routine"], ["09.45 - 10.15", "Istirahat", "break"], ["10.15 - 11.15", "kosong", "empty"], ["11.15 - 11.30", "Amaliah Ubudiyah", "break"], ["11.30 - 12.00", "Ishoma", "break"]] }
+                    ]
+                },
+                kelas5: {
+                    title: "KELAS V",
+                    schedule: [
+                        { date: "Senin, 01 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Pancasila", "subject"], ["08.45 - 09.45", "Qur'an Hadits", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Selasa, 02 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Indonesia", "subject"], ["08.45 - 09.45", "Fiqih", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Rabu, 03 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Matematika", "subject"], ["08.45 - 09.45", "Akidah Akhlak", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Kamis, 04 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Arab", "subject"], ["08.45 - 09.45", "Informatika", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Jumat, 05 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 08.15", "Bahasa Inggris", "subject"], ["08.15 - 09.15", "Mabadi'ul Fiqih", "subject"], ["09.15 - 10.00", "UMMI", "routine"], ["10.00 - 10.15", "Istirahat", "break"], ["10.15 - 10.45", "Review Materi berikutnya", "subject"], ["10.45 - 11.00", "Amaliyah Ubudiyah", "break"]] },
+                        { date: "Senin, 08 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "IPAS", "subject"], ["08.45 - 09.45", "Aqidatul Awwam", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Selasa, 09 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Aswaja", "subject"], ["08.45 - 09.45", "PJOK", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Rabu, 10 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "SKI", "subject"], ["08.45 - 09.45", "PEGO", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Kamis, 11 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Seni", "subject"], ["08.45 - 09.45", "Bahasa Jawa", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] }
+                    ]
+                },
+                kelas6: {
+                    title: "KELAS VI",
+                    schedule: [
+                        { date: "Senin, 01 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Pancasila", "subject"], ["08.45 - 09.45", "Qur'an Hadits", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Selasa, 02 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Indonesia", "subject"], ["08.45 - 09.45", "Fiqih", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Rabu, 03 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Matematika", "subject"], ["08.45 - 09.45", "Akidah Akhlak", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Kamis, 04 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Bahasa Arab", "subject"], ["08.45 - 09.45", "Informatika", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Jumat, 05 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 08.15", "Seni", "subject"], ["08.15 - 09.15", "Mabadi'ul Fiqih", "subject"], ["09.15 - 10.00", "UMMI", "routine"], ["10.00 - 10.15", "Istirahat", "break"], ["10.15 - 10.45", "Review Materi berikutnya", "subject"], ["10.45 - 11.00", "Amaliyah Ubudiyah", "break"]] },
+                        { date: "Senin, 08 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "IPAS", "subject"], ["08.45 - 09.45", "PEGO", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Selasa, 09 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "Aswaja", "subject"], ["08.45 - 09.45", "PJOK", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Rabu, 10 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "SKI", "subject"], ["08.45 - 09.45", "Shorof", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] },
+                        { date: "Kamis, 11 Desember 2025", activities: [["06.45 - 07.15", "Pembiasaan Diri", "routine"], ["07.15 - 07.45", "Hafalan", "routine"], ["07.45 - 08.45", "B. Inggris", "subject"], ["08.45 - 09.45", "Bahasa Jawa", "subject"], ["09.45 - 10.15", "Amaliyah Ubudiyah", "break"], ["10.15 - 10.45", "Istirahat", "break"], ["10.45 - 11.45", "UMMI", "routine"], ["11.45 - 12.15", "Review Materi berikutnya", "subject"], ["12.15 - 12.30", "Ishoma", "break"]] }
+                    ]
+                }
+            };
+
+            const tabNav = document.getElementById('tab-nav');
+            const tabContent = document.getElementById('tab-content');
+
+            // --- FUNGSI UNTUK MEMBUAT TAB NAVIGASI ---
+            function generateTabs() {
+                for (const key in allSchedulesData) {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `#${key}`;
+                    a.textContent = allSchedulesData[key].title;
+                    a.dataset.class = key; // Use data attribute to identify the class
+                    if (key === 'kelas1') {
+                        a.classList.add('active');
+                    }
+                    a.addEventListener('click', (e) => showTab(e));
+                    li.appendChild(a);
+                    tabNav.appendChild(li);
+                }
+            }
+
+            // --- FUNGSI UNTUK MENAMPILKAN KONTEN TAB ---
+            function showTab(event) {
+                event.preventDefault();
+                const clickedTab = event.target;
+                const classKey = clickedTab.dataset.class;
+
+                // Deactivate all tabs and panes
+                document.querySelectorAll('.tab-nav a').forEach(link => link.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+                // Activate clicked tab
+                clickedTab.classList.add('active');
+
+                // Show corresponding content
+                const targetPane = document.getElementById(classKey);
+                if (targetPane) {
+                    targetPane.classList.add('active');
+                } else {
+                    // If pane doesn't exist, generate it
+                    generateScheduleContent(classKey);
+                }
+            }
+
+            // --- FUNGSI UNTUK MEMBUAT KONTEN JADWAL ---
+            function generateScheduleContent(classKey) {
+                const data = allSchedulesData[classKey];
+                if (!data) return;
+
+                const pane = document.createElement('div');
+                pane.className = 'tab-pane active';
+                pane.id = classKey;
+
+                const grid = document.createElement('div');
+                grid.className = 'schedule-grid';
+
+                let currentWeekBlock = null;
+                let currentWeekNumber = 1;
+
+                data.schedule.forEach((day, index) => {
+                    // Create a new week block every 5 days or for the first day
+                    if (index % 5 === 0) {
+                        currentWeekBlock = document.createElement('div');
+                        currentWeekBlock.className = 'week-block';
+                        
+                        const h2 = document.createElement('h2');
+                        // Calculate date range for the week title
+                        const startDate = new Date(day.date.split(' ')[1] + ' ' + day.date.split(' ')[2] + ' 2025');
+                        const endDate = new Date(startDate);
+                        endDate.setDate(startDate.getDate() + 4); // Add 4 days to get the end of the 5-day week
+                        
+                        const options = { day: 'numeric', month: 'long' };
+                        const formattedEndDate = endDate.toLocaleDateString('id-ID', options);
+
+                        // h2.innerHTML = `MINGGU ${currentWeekNumber}<br><small style="font-size:0.7em; font-weight:normal;">${startDate.toLocaleDateString('id-ID', options)} - ${formattedEndDate} 2025</small>`;
+                        currentWeekBlock.appendChild(h2);
+                        grid.appendChild(currentWeekBlock);
+                        currentWeekNumber++;
+                    }
+
+                    const daySchedule = document.createElement('div');
+                    daySchedule.className = 'day-schedule';
+
+                    const h3 = document.createElement('h3');
+                    h3.textContent = day.date;
+                    daySchedule.appendChild(h3);
+
+                    const table = document.createElement('table');
+                    table.className = 'schedule-table';
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Kegiatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${day.activities.map(act => `
+                                <tr>
+                                    <td>${act[0]}</td>
+                                    <td class="activity-${act[2]}">${act[1]}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    `;
+                    daySchedule.appendChild(table);
+                    currentWeekBlock.appendChild(daySchedule);
+                });
+
+                pane.appendChild(grid);
+                tabContent.appendChild(pane);
+            }
+
+            // --- INISIALISASI ---
+            generateTabs();
+            generateScheduleContent('kelas1'); // Show the first class by default
+        });
+    </script>
+</body>
+</html>
