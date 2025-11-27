@@ -23,6 +23,10 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
@@ -232,6 +236,11 @@
             0% { opacity: 1; }
             50% { opacity: 0.9; }
             100% { opacity: 1; }
+        }
+
+        /* Smooth Scroll Animation */
+        .smooth-scroll-active {
+            scroll-behavior: smooth;
         }
 
         /* Responsive Design */
@@ -576,7 +585,7 @@
                 [ 9,  7, 34, 23, 38],
                 [34, 38,  7,  9, 23],
                 [26, 65, 52,  8, 27],
-                [32, 27,  8, 26, 45],
+                [32, 27,  8, 26, 13],
                 [27, 26, 32, 65,  8],
                 [ 9,  7, 34, 23, 38],
                 [34, 38,  7,  9, 23],
@@ -635,13 +644,13 @@
                     supervisors: [
                         [10, 27, 37, 19, 45], [39, 13, 45, 10, 41], [55, 61, 42, 13, 27], [42, 64, 13, 55, 39],
                         [45, 37, 10, 27, 64], [13, 39, 41, 61, 45], [27, 42, 39, 35, 10], [42, 10, 61, 45, 13],
-                        [64, 13, 27, 39, 10], [45, 37, 13, 55, 41], [10, 42, 64, 13, 39], [41, 39, 45, 10, 37],
+                        [64, 13, 27, 39, 10], [45, 37, 13, 55, 41], [10, 42, 64, 65, 39], [41, 39, 45, 10, 37],
                         [37, 41, 55, 61, 39], [19, 55, 13, 37, 10], [45, 10, 41, 27, 13], [10, 41, 13, 19, 45], [27, 19, 45, 10, 41], [37, 13, 19, 45, 27]
                     ]
                 },
                 kelas6: {
                     subjects: [
-                         { hari: 'Senin',   tanggal: '01 Des 2025', mapel: 'Pancasila',        jam: '07.45 - 08.45' },
+                { hari: 'Senin',   tanggal: '01 Des 2025', mapel: 'Pancasila',        jam: '07.45 - 08.45' },
                 { hari: 'Senin',   tanggal: '01 Des 2025', mapel: "Qur'an Hadist",     jam: '08.45 - 09.45' },
                 { hari: 'Selasa',   tanggal: '02 Des 2025', mapel: 'Bahasa Indonesia', jam: '07.45 - 08.45' },
                 { hari: 'Selasa',   tanggal: '02 Des 2025', mapel: 'Fiqih',            jam: '08.45 - 09.45' },
@@ -674,6 +683,30 @@
             const suggestionsContainer = document.getElementById('suggestionsContainer');
             const allSchedulesContainer = document.getElementById('all-schedules-container');
             let highlightedTeacherNumber = null;
+
+            // === FUNGSI SMOOTH SCROLL CUSTOM ===
+            function smoothScrollToElement(element, duration = 1000) {
+                const start = window.pageYOffset;
+                const target = element.getBoundingClientRect().top + start - 100; // Offset untuk sticky header
+                const startTime = performance.now();
+
+                function scrollStep(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Easing function untuk efek smooth
+                    const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+                    const easing = easeInOutCubic(progress);
+                    
+                    window.scrollTo(0, start + (target - start) * easing);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(scrollStep);
+                    }
+                }
+                
+                requestAnimationFrame(scrollStep);
+            }
 
             // === FUNGSI UTAMA ===
             function generateAllSchedules() {
@@ -802,6 +835,7 @@
             function highlightTeacher(num) {
                 clearHighlights();
                 const searchNum = String(num);
+                let firstHighlightedElement = null;
 
                 // Cari semua sel yang memiliki nomor guru yang dicari
                 document.querySelectorAll('#all-schedules-container td[data-numbers]').forEach(td => {
@@ -812,8 +846,22 @@
                         // Highlight kotak nomor guru
                         td.classList.add('highlighted-number');
                         
-                        // Cari baris dari sel ini
+                        // Tambahkan ID anchor untuk scrolling
                         const tr = td.closest('tr');
+                        const tanggal = tr.getAttribute('data-tanggal');
+                        const kelasContainer = tr.closest('.class-schedule-container');
+                        const kelas = kelasContainer.querySelector('h2').textContent.replace('KELAS ', '');
+                        
+                        // Buat ID unik untuk anchor
+                        const anchorId = `highlight-${kelas}-${tanggal}-${searchNum}`;
+                        if (!tr.id) {
+                            tr.id = anchorId;
+                        }
+                        
+                        // Simpan elemen pertama yang di-highlight untuk scrolling
+                        if (!firstHighlightedElement) {
+                            firstHighlightedElement = tr;
+                        }
                         
                         // Highlight sel mapel di baris yang sama
                         const mapelCell = tr.querySelector('td[data-label="MATA PELAJARAN"]');
@@ -822,12 +870,30 @@
                         }
                     }
                 });
+
+                // Scroll ke elemen pertama yang di-highlight dengan animasi smooth
+                if (firstHighlightedElement) {
+                    setTimeout(() => {
+                        smoothScrollToElement(firstHighlightedElement, 1200);
+                        
+                        // Tambahkan efek pulse tambahan untuk mempertegas
+                        firstHighlightedElement.style.animation = 'pulse 2s ease-in-out';
+                        setTimeout(() => {
+                            firstHighlightedElement.style.animation = '';
+                        }, 2000);
+                    }, 400);
+                }
             }
 
             function clearHighlights() {
                 document.querySelectorAll('.highlighted-number, .highlighted-mapel').forEach(el => {
                     el.classList.remove('highlighted-number');
                     el.classList.remove('highlighted-mapel');
+                });
+                
+                // Hapus ID anchor yang sebelumnya ditambahkan
+                document.querySelectorAll('[id^="highlight-"]').forEach(el => {
+                    el.removeAttribute('id');
                 });
             }
 
@@ -838,6 +904,27 @@
                 searchInput.value = ''; 
                 suggestionsContainer.style.display = 'none'; 
             });
+
+            // Tambahkan event listener untuk Enter key
+            searchInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter') {
+                    const searchValue = e.target.value.trim();
+                    if (searchValue) {
+                        // Cari guru berdasarkan nama atau nomor
+                        const foundTeacher = teachers.find(t => 
+                            t.name.toLowerCase().includes(searchValue.toLowerCase()) || 
+                            t.number.toString() === searchValue
+                        );
+                        
+                        if (foundTeacher) {
+                            highlightedTeacherNumber = foundTeacher.number;
+                            highlightTeacher(foundTeacher.number);
+                            suggestionsContainer.style.display = 'none';
+                        }
+                    }
+                }
+            });
+
             document.addEventListener('click', e => {
                 if (!e.target.closest('.search-container')) {
                     suggestionsContainer.style.display = 'none';
